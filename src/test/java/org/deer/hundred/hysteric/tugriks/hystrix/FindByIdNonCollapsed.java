@@ -27,6 +27,8 @@ import org.springframework.test.context.junit4.SpringRunner;
 @ContextConfiguration(classes = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 public class FindByIdNonCollapsed {
 
+  public static final int UPPER_BOUND_ID = 100;
+
   @Autowired
   private OfferRepository repository;
 
@@ -34,7 +36,7 @@ public class FindByIdNonCollapsed {
 
   @Before
   public void init() {
-    repository.saveAll(IntStream.range(0, 100)
+    repository.saveAll(IntStream.range(0, UPPER_BOUND_ID)
         .mapToObj(i -> {
           final Offer offer = new Offer();
           offer.setCreatedAt(LocalDateTime.now());
@@ -43,7 +45,7 @@ public class FindByIdNonCollapsed {
           return offer;
         }).collect(Collectors.toList()));
 
-    executorService = Executors.newFixedThreadPool(10);
+    executorService = Executors.newFixedThreadPool(100);
   }
 
   @After
@@ -52,19 +54,19 @@ public class FindByIdNonCollapsed {
   }
 
   @Test
-  public void testFindByIdNoncollapsed(){
+  public void testFindByIdNoncollapsed() {
     final long start = System.currentTimeMillis();
     final CompletableFuture[] all = new CompletableFuture[MAX];
     final Random random = new Random();
     for (int i = 0; i < MAX; i++) {
-      int index = random.nextInt(100);
+      int index = random.nextInt(UPPER_BOUND_ID * 2);
       all[i] = CompletableFuture
           .supplyAsync(() -> repository.findById(String.valueOf(index)), executorService)
           .thenAcceptAsync(offer -> {
             final String id = offer.map(Offer::getId)
                 .orElse(null);
 
-            if (id == null && index > 100) {
+            if (id == null && index >= UPPER_BOUND_ID) {
               return;
             }
 

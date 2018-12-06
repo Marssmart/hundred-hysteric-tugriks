@@ -1,5 +1,6 @@
 package org.deer.hundred.hysteric.tugriks.hystrix;
 
+import static org.deer.hundred.hysteric.tugriks.hystrix.FindByIdNonCollapsed.UPPER_BOUND_ID;
 import static org.junit.Assert.assertEquals;
 import static org.junit.Assert.assertTrue;
 
@@ -34,7 +35,7 @@ public class FindByIdRequestCollapserTest {
 
   @Before
   public void init() {
-    repository.saveAll(IntStream.range(0, 100)
+    repository.saveAll(IntStream.range(0, UPPER_BOUND_ID)
         .mapToObj(i -> {
           final Offer offer = new Offer();
           offer.setCreatedAt(LocalDateTime.now());
@@ -57,14 +58,14 @@ public class FindByIdRequestCollapserTest {
     final CompletableFuture[] all = new CompletableFuture[MAX];
     final Random random = new Random();
     for (int i = 0; i < MAX; i++) {
-      int index = random.nextInt(100);
+      int index = random.nextInt(UPPER_BOUND_ID);
       all[i] = CompletableFuture
           .supplyAsync(() -> repository.findById(String.valueOf(index)), executorService)
           .thenAcceptAsync(offer -> {
             final String id = offer.map(Offer::getId)
                 .orElse(null);
 
-            if (id == null && index > 100) {
+            if (id == null && index > UPPER_BOUND_ID) {
               return;
             }
 

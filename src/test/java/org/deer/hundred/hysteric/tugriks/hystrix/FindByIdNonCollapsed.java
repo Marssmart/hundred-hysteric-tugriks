@@ -1,13 +1,12 @@
 package org.deer.hundred.hysteric.tugriks.hystrix;
 
-import static org.deer.hundred.hysteric.tugriks.hystrix.FindByIdRequestCollapserTest.MAX;
+import static org.deer.hundred.hysteric.tugriks.hystrix.TestConstants.TOTAL_REQUESTS;
 
 import java.time.LocalDateTime;
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
-import java.util.stream.Collectors;
 import java.util.stream.IntStream;
 import org.deer.hundred.hysteric.tugriks.dto.Offer;
 import org.deer.hundred.hysteric.tugriks.repo.OfferRepository;
@@ -27,8 +26,6 @@ import org.springframework.test.context.junit4.SpringRunner;
 @ContextConfiguration(classes = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 public class FindByIdNonCollapsed {
 
-  public static final int UPPER_BOUND_ID = 100;
-
   @Autowired
   private OfferRepository repository;
 
@@ -36,16 +33,18 @@ public class FindByIdNonCollapsed {
 
   @Before
   public void init() {
-    repository.saveAll(IntStream.range(0, UPPER_BOUND_ID)
+    final Random rankGenerator = new Random();
+    IntStream.range(0, TestConstants.UPPER_BOUND_ID)
         .mapToObj(i -> {
           final Offer offer = new Offer();
           offer.setCreatedAt(LocalDateTime.now());
           offer.setId(String.valueOf(i));
           offer.setName("offer" + i);
+          offer.setRank(rankGenerator.nextInt(10));
           return offer;
-        }).collect(Collectors.toList()));
+        }).forEach(repository::save);
 
-    executorService = Executors.newFixedThreadPool(100);
+    executorService = Executors.newFixedThreadPool(TestConstants.EXECUTOR_THREADS_COUNT);
   }
 
   @After
@@ -56,17 +55,17 @@ public class FindByIdNonCollapsed {
   @Test
   public void testFindByIdNoncollapsed() {
     final long start = System.currentTimeMillis();
-    final CompletableFuture[] all = new CompletableFuture[MAX];
+    final CompletableFuture[] all = new CompletableFuture[TOTAL_REQUESTS];
     final Random random = new Random();
-    for (int i = 0; i < MAX; i++) {
-      int index = random.nextInt(UPPER_BOUND_ID * 2);
+    for (int i = 0; i < TOTAL_REQUESTS; i++) {
+      int index = random.nextInt(TestConstants.UPPER_BOUND_ID * 2);
       all[i] = CompletableFuture
           .supplyAsync(() -> repository.findById(String.valueOf(index)), executorService)
           .thenAcceptAsync(offer -> {
             final String id = offer.map(Offer::getId)
                 .orElse(null);
 
-            if (id == null && index >= UPPER_BOUND_ID) {
+            if (id == null && index >= TestConstants.UPPER_BOUND_ID) {
               return;
             }
 
@@ -78,6 +77,6 @@ public class FindByIdNonCollapsed {
 
     CompletableFuture.allOf(all).join();
     final long resultTime = System.currentTimeMillis() - start;
-    System.out.println(MAX + " requests in " + resultTime + " milliseconds");
+    System.out.println(TOTAL_REQUESTS + " requests in " + resultTime + " milliseconds");
   }
 }

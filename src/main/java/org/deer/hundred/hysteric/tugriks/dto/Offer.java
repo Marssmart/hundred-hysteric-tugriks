@@ -14,6 +14,8 @@ public class Offer implements MatchableById<String> {
 
   private String name;
 
+  private int rank;
+
   public String getId() {
     return id;
   }
@@ -38,12 +40,21 @@ public class Offer implements MatchableById<String> {
     this.name = name;
   }
 
+  public int getRank() {
+    return rank;
+  }
+
+  public void setRank(int rank) {
+    this.rank = rank;
+  }
+
   @Override
   public String toString() {
     return "Offer{" +
         "id='" + id + '\'' +
         ", createdAt=" + createdAt +
         ", name='" + name + '\'' +
+        ", rank=" + rank +
         '}';
   }
 

@@ -1,4 +1,4 @@
-package org.deer.hundred.hysteric.tugriks.hystrix;
+package org.deer.hundred.hysteric.tugriks.hystrix.query.command;
 
 import com.netflix.hystrix.HystrixCollapser;
 import com.netflix.hystrix.HystrixCollapserKey;
@@ -97,6 +97,7 @@ public class FindByIdRequestCollapser<T extends MatchableById<ID>, ID extends Se
         if (result.match(request.getArgument())) {
           matched = request;
           request.setResponse(result);
+          break;//we can break here as request cache makes sure there are not duplicate requests
         }
       }
       if (matched != null) {

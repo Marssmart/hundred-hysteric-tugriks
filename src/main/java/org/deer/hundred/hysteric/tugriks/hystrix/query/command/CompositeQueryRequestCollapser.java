@@ -7,6 +7,7 @@ import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixCommandProperties;
+import com.netflix.hystrix.HystrixCommandProperties.ExecutionIsolationStrategy;
 import com.netflix.hystrix.HystrixThreadPoolProperties;
 import java.util.Collection;
 import java.util.LinkedList;
@@ -47,12 +48,10 @@ public abstract class CompositeQueryRequestCollapser<T>
     this.commandSetter = HystrixCommand.Setter
         .withGroupKey(HystrixCommandGroupKey.Factory.asKey(key))
         .andCommandKey(HystrixCommandKey.Factory.asKey(key))
-        .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.defaultSetter()
-            .withQueueSizeRejectionThreshold(1000)
-            .withCoreSize(50)
-            .withMaximumSize(100))
         .andCommandPropertiesDefaults(
             HystrixCommandProperties.Setter()
+                .withExecutionIsolationSemaphoreMaxConcurrentRequests(10000)
+                .withExecutionIsolationStrategy(ExecutionIsolationStrategy.SEMAPHORE)
                 .withExecutionTimeoutEnabled(false)
                 .withRequestLogEnabled(false));
   }

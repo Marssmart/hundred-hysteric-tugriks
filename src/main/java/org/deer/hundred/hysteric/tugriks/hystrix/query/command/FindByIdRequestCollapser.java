@@ -7,6 +7,7 @@ import com.netflix.hystrix.HystrixCommand;
 import com.netflix.hystrix.HystrixCommandGroupKey;
 import com.netflix.hystrix.HystrixCommandKey;
 import com.netflix.hystrix.HystrixCommandProperties;
+import com.netflix.hystrix.HystrixCommandProperties.ExecutionIsolationStrategy;
 import com.netflix.hystrix.HystrixThreadPoolProperties;
 import java.io.Serializable;
 import java.util.Collection;
@@ -14,6 +15,7 @@ import java.util.LinkedList;
 import java.util.List;
 import java.util.Set;
 import java.util.stream.Collectors;
+import org.apache.commons.lang.SerializationUtils;
 import org.deer.hundred.hysteric.tugriks.dto.MatchableById;
 import org.slf4j.Logger;
 import org.slf4j.LoggerFactory;
@@ -49,10 +51,10 @@ public class FindByIdRequestCollapser<T extends MatchableById<ID>, ID extends Se
     this.commandSetter = HystrixCommand.Setter
         .withGroupKey(HystrixCommandGroupKey.Factory.asKey(collectionName))
         .andCommandKey(HystrixCommandKey.Factory.asKey("findById_" + collectionName))
-        .andThreadPoolPropertiesDefaults(HystrixThreadPoolProperties.defaultSetter()
-            .withMaximumSize(100))
         .andCommandPropertiesDefaults(
             HystrixCommandProperties.Setter()
+                .withExecutionIsolationSemaphoreMaxConcurrentRequests(10000)
+                .withExecutionIsolationStrategy(ExecutionIsolationStrategy.SEMAPHORE)
                 .withExecutionTimeoutEnabled(false)
                 .withRequestLogEnabled(false));
   }

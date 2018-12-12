@@ -6,6 +6,7 @@ import java.util.List;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
+import org.apache.commons.lang.SerializationUtils;
 import org.bson.Document;
 import org.deer.hundred.hysteric.tugriks.hystrix.query.command.CompositeQueryRequestCollapser;
 import org.deer.hundred.hysteric.tugriks.hystrix.query.command.FindByIdRequestCollapser;
@@ -44,9 +45,14 @@ public class HystrixMongoTemplate extends MongoTemplate {
       }
     }
     try {
-      return (T) new FindByIdRequestCollapser(this, (Serializable) id, entityClass, collectionName)
+      final Object result = new FindByIdRequestCollapser(this, (Serializable) id, entityClass,
+          collectionName)
           .queue()
           .get(5000, TimeUnit.MILLISECONDS);
+
+      //results need to be cloned, to prevent threads that invoke duplicate requests to actually
+      //receive the same instance of data, we just want them to get same data
+      return (T) SerializationUtils.clone((Serializable) result);
     } catch (InterruptedException | ExecutionException | TimeoutException e) {
       throw new IllegalStateException(e);
     }
@@ -68,7 +74,9 @@ public class HystrixMongoTemplate extends MongoTemplate {
 
         if (command != null) {
           try {
-            return (List<T>) command.queue().get(20000, TimeUnit.MILLISECONDS);
+            final List<T> result = (List<T>) command.queue()
+                .get(20000, TimeUnit.MILLISECONDS);
+            return (List<T>) SerializationUtils.clone((Serializable) result);
           } catch (InterruptedException | ExecutionException | TimeoutException e) {
             throw new IllegalStateException(e);
           }

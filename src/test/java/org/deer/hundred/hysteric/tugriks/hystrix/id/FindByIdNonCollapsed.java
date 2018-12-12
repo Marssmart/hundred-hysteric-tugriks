@@ -1,4 +1,4 @@
-package org.deer.hundred.hysteric.tugriks.hystrix;
+package org.deer.hundred.hysteric.tugriks.hystrix.id;
 
 import static org.deer.hundred.hysteric.tugriks.hystrix.TestConstants.TOTAL_REQUESTS;
 
@@ -9,6 +9,7 @@ import java.util.concurrent.ExecutorService;
 import java.util.concurrent.Executors;
 import java.util.stream.IntStream;
 import org.deer.hundred.hysteric.tugriks.dto.Offer;
+import org.deer.hundred.hysteric.tugriks.hystrix.TestConstants;
 import org.deer.hundred.hysteric.tugriks.repo.OfferRepository;
 import org.junit.After;
 import org.junit.Before;

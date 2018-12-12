@@ -1,11 +1,12 @@
 package org.deer.hundred.hysteric.tugriks.dto;
 
 import java.time.LocalDateTime;
+import java.util.Objects;
 import org.springframework.data.annotation.Id;
 import org.springframework.data.mongodb.core.mapping.Document;
 
 @Document
-public class Offer implements MatchableById<String> {
+public class Offer implements MatchableById<String>{
 
   @Id
   private String id;
@@ -61,5 +62,26 @@ public class Offer implements MatchableById<String> {
   @Override
   public boolean match(String idValue) {
     return idValue.equals(id);
+  }
+
+
+  @Override
+  public boolean equals(Object o) {
+    if (this == o) {
+      return true;
+    }
+    if (o == null || getClass() != o.getClass()) {
+      return false;
+    }
+    Offer offer = (Offer) o;
+    return rank == offer.rank &&
+        Objects.equals(id, offer.id) &&
+        Objects.equals(createdAt, offer.createdAt) &&
+        Objects.equals(name, offer.name);
+  }
+
+  @Override
+  public int hashCode() {
+    return Objects.hash(id, createdAt, name, rank);
   }
 }

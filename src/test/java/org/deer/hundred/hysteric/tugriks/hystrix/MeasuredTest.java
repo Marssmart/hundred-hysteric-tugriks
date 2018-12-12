@@ -18,7 +18,6 @@ public class MeasuredTest {
     return System.currentTimeMillis() - start;
   }
 
-
   @FunctionalInterface
   public interface DoStuff {
 

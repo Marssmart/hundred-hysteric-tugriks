@@ -1,5 +1,7 @@
 package org.deer.hundred.hysteric.tugriks.hystrix.or.two.conditions;
 
+import static java.lang.String.format;
+
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -23,9 +25,9 @@ import org.springframework.test.context.junit4.SpringRunner;
 @ContextConfiguration(classes = {MongoAutoConfiguration.class, MongoDataAutoConfiguration.class})
 public class OrNonCollapsed {
 
-
   @Autowired
   private OfferRepository offerRepository;
+
   private ExecutorService executor;
 
   @Before
@@ -38,12 +40,14 @@ public class OrNonCollapsed {
     executor.shutdown();
   }
 
+  //i've had to reduce the nr of threads here as the non collapsed version of this had
+  //some serious perf problems
   @Test
   public void testRepoQueryOr() {
     final long time = MeasuredTest.measure(() -> {
-      CompletableFuture[] futures = new CompletableFuture[200];
+      CompletableFuture[] futures = new CompletableFuture[TestConstants.TOTAL_OR_REQUESTS];
       final Random generator = new Random();
-      for (int i = 0; i < 200; i++) {
+      for (int i = 0; i < TestConstants.TOTAL_OR_REQUESTS; i++) {
         futures[i] = CompletableFuture
             .supplyAsync(() -> offerRepository.findAllByRankGreaterThanOrName(generator.nextInt(10),
                 "offer-" + generator.nextInt(10)), executor);

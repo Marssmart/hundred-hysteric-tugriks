@@ -1,5 +1,7 @@
 package org.deer.hundred.hysteric.tugriks.hystrix.or.two.conditions;
 
+import static org.deer.hundred.hysteric.tugriks.hystrix.TestConstants.TOTAL_OR_REQUESTS;
+
 import java.util.Random;
 import java.util.concurrent.CompletableFuture;
 import java.util.concurrent.ExecutorService;
@@ -36,9 +38,9 @@ public class OrCollapsed {
   @Test
   public void testRepoQueryOr() {
     final long time = MeasuredTest.measure(() -> {
-      CompletableFuture[] futures = new CompletableFuture[200];
+      CompletableFuture[] futures = new CompletableFuture[TOTAL_OR_REQUESTS];
       final Random generator = new Random();
-      for (int i = 0; i < 200; i++) {
+      for (int i = 0; i < TOTAL_OR_REQUESTS; i++) {
         futures[i] = CompletableFuture
             .supplyAsync(() -> offerRepository.findAllByRankGreaterThanOrName(generator.nextInt(10),
                 "offer-" + generator.nextInt(10)), executor);
